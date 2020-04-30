@@ -1944,6 +1944,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 /* harmony default export */ __webpack_exports__["default"] = ({
@@ -1953,16 +1963,24 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      open: true
+      open: true,
+      friends: []
     };
   },
   methods: {
     close: function close() {
       this.open = false;
+    },
+    getFriends: function getFriends() {
+      var _this = this;
+
+      axios.post('/getFriends').then(function (res) {
+        return _this.friends = res.data.data;
+      })["catch"](); //  axios.post('/getFriends').then((res)=>console.log(res)).catch()
     }
   },
   created: function created() {
-    BusEvent.$on('closechat');
+    this.getFriends();
   }
 });
 
@@ -1990,23 +2008,40 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 /* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['friends'],
   data: function data() {
-    return {
-      friends: []
-    };
+    return {};
   },
   methods: {
-    getFriends: function getFriends() {
+    open: function open(friend) {
+      if (friend.session) {
+        this.closeAll();
+        friend.session.open = true;
+      } else {
+        this.createSession(friend);
+      }
+    },
+    createSession: function createSession(friend) {
       var _this = this;
 
-      axios.post('/getFriends').then(function (res) {
-        return _this.friends = res.data.data;
-      })["catch"](); //  axios.post('/getFriends').then((res)=>console.log(res)).catch()
+      axios.post('/session/create', {
+        friend_id: friend.id
+      }).then(function (res) {
+        friend.session = res.data.data;
+
+        _this.closeAll(); //   friend.session.open=true
+
+      })["catch"](function (error) {
+        return console.log(error);
+      });
+    },
+    closeAll: function closeAll() {
+      this.friends.forEach(function (friend) {
+        friend.session.open = false;
+      });
     }
   },
-  created: function created() {
-    this.getFriends();
-  }
+  created: function created() {}
 });
 
 /***/ }),
@@ -2084,6 +2119,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 /* harmony default export */ __webpack_exports__["default"] = ({
+  props: ['friend'],
   data: function data() {
     return {
       chats: [],
@@ -2099,7 +2135,10 @@ __webpack_require__.r(__webpack_exports__);
       console.log('pass');
     },
     close: function close() {
-      this.$emit('close'); //console.log('closerrr')
+      console.log('close');
+      console.log(this.friend.session);
+      this.friend.session.open = false; //this.$emit('close')
+      //console.log('closerrr')
     },
     clear: function clear() {
       this.chats = [];
@@ -2112,36 +2151,6 @@ __webpack_require__.r(__webpack_exports__);
   created: function created() {
     this.chats.push({
       message: 'hey'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
-    }, {
-      message: 'i am jermaine'
     }, {
       message: 'i am jermaine'
     });
@@ -6726,7 +6735,7 @@ exports = module.exports = __webpack_require__(/*! ../../../node_modules/css-loa
 
 
 // module
-exports.push([module.i, "\n.chatbox[data-v-77603e6e]{\n    height: 400px;\n}\n.chatbox[data-v-77603e6e]{\n    overflow-y: auto;\n}\n\n", ""]);
+exports.push([module.i, "\n.chatbox[data-v-77603e6e]{\n    height: 300px;\n}\n.chatbox[data-v-77603e6e]{\n    overflow-y: auto;\n}\n\n", ""]);
 
 // exports
 
@@ -38571,19 +38580,31 @@ var render = function() {
     _vm._v(" "),
     _c("div", { staticClass: "card-body" }, [
       _c("div", { staticClass: "row" }, [
-        _c("div", { staticClass: "col-3" }, [_c("friends-component")], 1),
+        _c(
+          "div",
+          { staticClass: "col-3" },
+          [_c("friends-component", { attrs: { friends: _vm.friends } })],
+          1
+        ),
         _vm._v(" "),
         _c(
           "div",
           { staticClass: "col-9" },
-          [
-            _vm.open
-              ? _c("message-component", { on: { close: _vm.close } }, [
-                  _vm._v("/")
-                ])
+          _vm._l(_vm.friends, function(friend) {
+            return friend.session
+              ? _c(
+                  "span",
+                  { key: friend.id },
+                  [
+                    friend.session.open
+                      ? _c("message-component", { attrs: { friend: friend } })
+                      : _vm._e()
+                  ],
+                  1
+                )
               : _vm._e()
-          ],
-          1
+          }),
+          0
         )
       ])
     ])
@@ -38616,9 +38637,19 @@ var render = function() {
       "ul",
       { staticClass: "list-group" },
       _vm._l(_vm.friends, function(friend) {
-        return _c("li", { key: friend.id, staticClass: "list-group-item" }, [
-          _vm._v(_vm._s(friend.name))
-        ])
+        return _c(
+          "li",
+          {
+            key: friend.id,
+            staticClass: "list-group-item",
+            on: {
+              click: function($event) {
+                return _vm.open(friend)
+              }
+            }
+          },
+          [_vm._v(_vm._s(friend.name) + " ")]
+        )
       }),
       0
     )
@@ -38649,7 +38680,7 @@ var render = function() {
   return _c("div", { staticClass: "card" }, [
     _c("div", { staticClass: "card-header" }, [
       _c("span", { class: { "text-danger": _vm.block_session } }, [
-        _vm._v("Username")
+        _vm._v(_vm._s(_vm.friend.name))
       ]),
       _vm._v(" "),
       _vm.block_sesion ? _c("span", [_vm._v("(Blocked)")]) : _vm._e(),

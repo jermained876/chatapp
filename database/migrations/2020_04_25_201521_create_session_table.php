@@ -18,7 +18,7 @@ class CreateSessionTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user1_id');
             $table->unsignedBigInteger('user2_id');
-            $table->unique('user1_id','user2_id');
+            //$table->unique('user1_id','user2_id');
             $table->timestamps();
         });
     }

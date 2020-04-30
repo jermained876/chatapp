@@ -2,7 +2,7 @@
 
 <div class="card">
                                     <div class="card-header">
-                                         <span  :class="{'text-danger':block_session}">Username</span>
+                                         <span  :class="{'text-danger':block_session}">{{friend.name}}</span>
                                             <span v-if="block_sesion">(Blocked)</span>
 
 
@@ -63,6 +63,7 @@
 
 <script>
 export default {
+    props:['friend'],
 
 data(){
     return{
@@ -78,8 +79,10 @@ methods:{
                 console.log('pass')
                 },
                 close(){
-
-                this.$emit('close')
+                    console.log('close')
+                    console.log(this.friend.session)
+                this.friend.session.open=false
+                //this.$emit('close')
                     //console.log('closerrr')
                 },
                 clear()
@@ -94,22 +97,8 @@ methods:{
 },
 created(){
 this.chats.push({message:'hey'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
-{message:'i am jermaine'},
 {message:'i am jermaine'}
+
 )
 }
 
@@ -118,7 +107,7 @@ this.chats.push({message:'hey'},
 
 <style scoped>
 .chatbox{
-    height: 400px;
+    height: 300px;
 }
 .chatbox{
     overflow-y: auto;

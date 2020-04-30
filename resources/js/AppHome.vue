@@ -8,16 +8,26 @@
 
                             <div class="col-3">
 
-                                    <friends-component></friends-component>
+                                    <friends-component :friends="friends"></friends-component>
 
                             </div>
 
                             <div class="col-9">
 
-                                 <message-component v-if="open"
-                                 @close="close"
-                                 >/</message-component>
+                                <span v-for="friend in friends" :key="friend.id"
+                                 v-if="friend.session">
 
+                                     <message-component 
+                               
+                                 :friend=friend
+                                 v-if="friend.session.open"
+
+                                 ></message-component>
+
+
+
+                                </span>
+                                
 
                             </div>
 
@@ -40,18 +50,24 @@ export default{
 components:{MessageComponent,FriendsComponent},
 data(){
     return{
-        open:true
+        open:true,
+        friends:[]
     }
 },
 methods:{
-close()
-{
-this.open=false
-}
+            close()
+            {
+            this.open=false
+            },
+             getFriends()
+        {
+             axios.post('/getFriends').then((res)=>this.friends=res.data.data).catch()
+           //  axios.post('/getFriends').then((res)=>console.log(res)).catch()
+        }
 },
-created(){
-   BusEvent.$on('closechat')
-}
+            created(){
+           this.getFriends()
+            }
 
 }
 
